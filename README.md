@@ -18,7 +18,7 @@ cd supercalifragilisticexpialidocious_utilities
 - Sequence reversal and complement generation
 - FASTQ file quality filtering
 - Sequence length-based filtering
-```
+
 #### Available Operations
 is_nucleic_acid - check if sequence is DNA/RNA
 
