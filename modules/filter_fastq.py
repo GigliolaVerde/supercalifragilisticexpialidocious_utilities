@@ -1,4 +1,24 @@
-def check_gc_content(seq, gc_bounds):
+def iterate_in_fastq(input_fastq: str) -> dict[str, tuple[str, str]]:
+    """
+    Transform fastq-file into a dict.
+    Arguments:
+    input_fastq: path to the fastq-file.
+
+    Returns dict where key is sequence name 
+    and the value is a tuple (sequence, quality).
+    """
+    with open(input_fastq,'r') as file_in:
+        line = file_in.readline().strip()
+        while line:
+            if line.startswith('@SRX'):
+                seq_name = line[1:].split()[0]
+                seq = file_in.readline().strip()
+                plus = file_in.readline().strip() 
+                qual = file_in.readline().strip()
+                yield seq_name, seq, plus, qual         
+            line = file_in.readline().strip()
+
+def check_gc_content(seq: str, gc_bounds: int | tuple[int, int]) -> bool:
     """
     Check if the sequence length meets the demands.
     Arguments:
@@ -18,7 +38,7 @@ def check_gc_content(seq, gc_bounds):
     else:
         raise ValueError("Check the GC-percent bounds...")
 
-def check_length(seq, length_bounds):
+def check_length(seq: str, length_bounds: int | tuple[int, int]) -> bool:
     """
     Check if the sequence length meets the demands.
     Arguments:
@@ -36,12 +56,12 @@ def check_length(seq, length_bounds):
     else:
         raise ValueError("Check the length bounds...")
         
-def check_quality(quality, quality_threshold):
+def check_quality(quality, quality_threshold: int) -> bool:
     """ 
     Check if the sequence quality meets the necessary threshold.
     Arguments:
-    quality: int / float
-    quality_threshold: int / float
+    quality: int
+    quality_threshold: int
 
     Returns bool. 
     Raises exception if y is 0
