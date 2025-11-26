@@ -15,13 +15,13 @@ from modules.filter_fastq import (
     iterate_in_fastq
 )
 
-def run_dna_rna_tools(*args):
+
+def run_dna_rna_tools(*args: str) -> str | list[str]:
     """Main function for DNA/RNA sequence operations."""
     if len(args) == 0:
         raise ValueError("Where are the arguments???")
 
-    action_name = args[-1]
-    sequences = args[:-1]
+    *sequences, action_name = args
 
     if len(sequences) == 0:
         raise ValueError("Where are the sequences???")
@@ -37,17 +37,17 @@ def run_dna_rna_tools(*args):
     if action_name not in actions:
         raise ValueError("I don't know this action")
 
-    final_results = []
+    final_results: list[str] = []
     for sequence in sequences:
         if not isinstance(sequence, str):
             raise TypeError("Sequences must be strings...")
 
         if action_name == 'is_nucleic_acid':
-            result = actions[action_name](sequence)
+            result: bool = actions[action_name](sequence)
         else:
             if not is_nucleic_acid(sequence):
                 raise ValueError("Some sequences aren't nucleic acids...")
-            result = actions[action_name](sequence)
+            result: str = actions[action_name](sequence)
 
         final_results.append(result)
 
@@ -55,39 +55,39 @@ def run_dna_rna_tools(*args):
 
 
 def filter_fastq(
-    input_fastq: str, 
+    input_fastq: str,
     output_fastq: str,
     gc_bounds: int | tuple[int, int] = (0, 100),
     length_bounds: int | tuple[int, int] = (0, 2**32),
     quality_threshold: int = 0,
 ) -> None:
-    """ 
-    Filter sequences with correct GC-content, length and quality
-    
+    """
+    Filter sequences with correct GC-content, length and quality.
+
     Arguments:
-    input_fastq: a path to an input file 
+    input_fastq: a path to an input file
     output_fastq: a path to an output file
-    gc_bounds: a required percentage bounds of GC-pairs 
+    gc_bounds: a required percentage bounds of GC-pairs
     length_bounds: a required length bounds of sequences
-    quality_threshold: a required threshold of quality according to the Fred scale
-    
-    Returns None 
+    quality_threshold: a required threshold of quality
+
+    Returns None
     Raises exception if output file name already exist.
     """
     if not os.path.exists("filtered"):
         os.makedirs("filtered", exist_ok=True)
-    output_path = os.path.join("filtered", output_fastq)
+    output_path: str = os.path.join("filtered", output_fastq)
     if os.path.exists(output_path):
         raise FileExistsError("This file name exists...")
 
     with open(output_path, 'w') as file_out:
         for seq_name, seq, plus, qual in iterate_in_fastq(input_fastq):
-           if (
-            check_length(seq, length_bounds)
-            and check_quality(qual, quality_threshold)
-            and check_gc_content(seq, gc_bounds)
-        ):
-            file_out.write(f"@{seq_name}\n")
-            file_out.write(f"{seq}\n")
-            file_out.write(f"{plus}\n")                                      
-            file_out.write(f"{qual}\n")
+            if (
+                check_length(seq, length_bounds)
+                and check_quality(qual, quality_threshold)
+                and check_gc_content(seq, gc_bounds)
+            ):
+                file_out.write(f"@{seq_name}\n")
+                file_out.write(f"{seq}\n")
+                file_out.write(f"{plus}\n")
+                file_out.write(f"{qual}\n")
