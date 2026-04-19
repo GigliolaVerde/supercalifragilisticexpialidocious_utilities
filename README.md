@@ -1,6 +1,7 @@
+markdown
 # Supercalifragilisticexpialidocious_utilities
 
-A set of bioinformatics utilities for working with DNA/RNA sequences and FASTQ files.
+A set of bioinformatics utilities for working with biological sequences (DNA, RNA, proteins) and FASTQ files.
 
 ## Installation
 
@@ -9,111 +10,128 @@ A set of bioinformatics utilities for working with DNA/RNA sequences and FASTQ f
 git clone https://github.com/GigliolaVerde/supercalifragilisticexpialidocious_utilities.git
 cd supercalifragilisticexpialidocious_utilities
 ```
-## Usage
 
-## Functionality
+## Features
+The package provides two main possibilities:
 
-- Nucleic acid sequence validation
-- DNA to RNA transcription 
-- Sequence reversal and complement generation
-- FASTQ file quality filtering
-- Sequence length-, quality- and GC-content-based filtering
+* Sequence manipulation with classes for DNA, RNA, and protein sequences
 
-#### Available Operations
-is_nucleic_acid - check if sequence is DNA/RNA
+* FASTQ quality filtering with multiple filtering criteria
 
-transcribe - transcribe DNA → RNA
 
-reverse - reverse sequence
 
-complement - complementary sequence
+The package implements an object-oriented hierarchy for biological sequences:
 
-reverse_complement - reverse complementary sequence
+* BiologicalSequence (abstract base class)
 
-##### Usage Examples
+* NucleicAcidSequence (abstract)
 
+* DNASequence
+
+* RNASequence
+
+* AminoAcidSequence
+
+## Basic Usage
 ```python
-from supercalifragilisticexpialidocious_tools import run_dna_rna_tools
+from supercalifragilisticexpialidocious_tools import DNASequence, RNASequence, AminoAcidSequence
 
-# Check if sequence is valid nucleic acid
-is_valid = run_dna_rna_tools("ATCGATCG", "is_nucleic_acid")
-print(is_valid)
+# Create DNA sequence
+dna = DNASequence("ATCGATCG")
+print(dna)  # ATCGATCG
+print(len(dna))  # 8
 
-# Transcribe DNA to RNA
-rna_sequence = run_dna_rna_tools("ATCGATCG", "transcribe")
-print(rna_sequence)
+# Reverse complement
+rev_comp = dna.reverse_complement()
+print(rev_comp)  # CGATCGAT
 
-# Generate reverse complement
-rev_comp = run_dna_rna_tools("ATCGATCG", "reverse_complement")
-print(rev_comp)
+# Transcribe to RNA
+rna = dna.transcribe()
+print(rna)  # AUCGAUCG
 
-# Process multiple sequences
-results = run_dna_rna_tools("ATCG", "GCTA", "TTAA", "reverse_complement")
-print(results)
+# RNA operations
+rna_complement = rna.complement()
+print(rna_complement)  # UAGCUAGC
+
+# Protein sequence
+protein = AminoAcidSequence("ACDEFGHIK")
+print(protein.calculate_mol_weight())  # 990.0 (9 * 110)
 ```
+## Available Methods
+### For DNA/RNA sequences:
 
-#### FASTQ Filtering
-The filter_fastq function filters reads by:
+* complement() - generate complementary sequence
 
-Sequence length - filter reads by minimum and/or maximum length
+* reverse() - reverse sequence
 
-Average quality - filter by minimum average Phred quality score
+* reverse_complement() - reverse complementary sequence
 
-GC-content - filter by GC percentage bounds
+* check_alphabet() - validate sequence characters
 
-##### Usage Examples
+### For DNA sequences only:
+
+* transcribe() - convert DNA to RNA
+
+### For protein sequences:
+
+* calculate_mol_weight() - approximate molecular weight (110 Da per amino acid)
+
+## FASTQ Filtering
+The filter_fastq function filters reads from FASTQ files based on multiple criteria:
+
+* GC-content - filter by GC percentage bounds
+
+* Sequence length - filter by minimum and/or maximum length
+
+* Quality score - filter by minimum average Phred quality score
+
+### Usage Examples
 ```python
 from supercalifragilisticexpialidocious_tools import filter_fastq
 
-# Basic filtering
+# Basic quality filtering
 filter_fastq(
     input_fastq="input.fastq",
-    output_fastq="filtered.fastq",
+    output_fastq="high_quality.fastq",
     quality_threshold=20
 )
 
-# Filter by length
+# Filter by length only (sequences <= 150 bp)
 filter_fastq(
     input_fastq="input.fastq",
-    output_fastq="length_filtered.fastq",
-    length_bounds=(50, 150)
+    output_fastq="short_reads.fastq",
+    length_bounds=150  # equivalent to (0, 150)
 )
 
-# Filter by GC content
+# Filter by GC content (40-60% GC)
 filter_fastq(
     input_fastq="input.fastq",
     output_fastq="gc_filtered.fastq",
     gc_bounds=(40, 60)
 )
 
-# Combined filtering
+# Combined filtering with all parameters
 filter_fastq(
     input_fastq="input.fastq",
-    output_fastq="high_quality.fastq",
+    output_fastq="stringent_filtered.fastq",
     gc_bounds=(45, 55),
     length_bounds=(75, 125),
     quality_threshold=30
 )
 ```
-### FASTA file processing
-#### Multiline to oneline conversion
-Convert multiline FASTA files to single-line format:
-```python
-from bio_files_processor import convert_multiline_fasta_to_oneline
+## Important Notes
+* Output files are automatically saved in a filtered/ directory
 
-convert_multiline_fasta_to_oneline("multiline.fasta", "oneline.fasta")
-```
+* The function raises FileExistsError if the output file already exists
 
-#### BLAST output parsing
-Extract best matches from BLAST output:
-```python
-from bio_files_processor import parse_blast_output
+* When single integer values are provided for bounds, they're interpreted as upper limits:
 
-parse_blast_output("blast_output.txt", "best_matches.txt")
-```
+* gc_bounds=50 means GC content between 0-50%
+
+* length_bounds=200 means length between 0-200 bp
 
 ## Contact
 For questions and suggestions, please create an issue in the repository.
 
-## License
+### License
 MIT License
